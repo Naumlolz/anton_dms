@@ -27,8 +27,10 @@ ActiveRecord::Schema.define(version: 2022_12_05_071848) do
     t.string "name"
     t.integer "telegram_id"
     t.string "step"
+    t.bigint "program_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.index ["program_id"], name: "index_users_on_program_id"
   end
 
 end
