@@ -11,17 +11,8 @@ Telegram::Bot::Client.run(token) do |bot|
       user = User.find_by(telegram_id: message.from.id)
     end
 
-    # puts message
-    case user.step
-    when "Мой ДМС: 36000руб."
-      user.update(program_id: Program.find_by(price: "Мой ДМС: 36000руб.".split.last[0..-5].to_i).id)
-      user.save
-    end
-
     case message.text
     when "/start"
-      user.step = "start"
-      user.save
       bot.api.send_message(
         chat_id:    message.chat.id,
         text:       "Hello, #{message.from.username}"
@@ -38,8 +29,6 @@ Telegram::Bot::Client.run(token) do |bot|
         reply_markup:     markup
       )
     when "/end"
-      user.step = "end"
-      user.save
       kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
       bot.api.send_message(
         chat_id:          message.chat.id,
@@ -48,11 +37,14 @@ Telegram::Bot::Client.run(token) do |bot|
       )
     when "#{message.text}"
       user.step = "#{message.text}"
-      user.save
       bot.api.send_message(
         chat_id:          message.chat.id,
         text:             "Вы выбрали программу: #{message.text}"
       )
+      user.update(program_id: Program.find_by(
+        price: "#{user.step}".split.last[0..-5].to_i).id
+      )
+      user.save
     end
   end
 end

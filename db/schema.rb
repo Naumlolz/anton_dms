@@ -33,4 +33,5 @@ ActiveRecord::Schema.define(version: 2022_12_05_071848) do
     t.index ["program_id"], name: "index_users_on_program_id"
   end
 
+  add_foreign_key "users", "programs"
 end
