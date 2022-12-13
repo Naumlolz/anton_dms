@@ -2,13 +2,20 @@
 #
 # Table name: users
 #
-#  id          :bigint           not null, primary key
-#  name        :string
-#  step        :string
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  program_id  :bigint
-#  telegram_id :integer
+#  id            :bigint           not null, primary key
+#  date_of_birth :date
+#  email         :string
+#  father_name   :string
+#  first_name    :string
+#  gender        :string
+#  last_name     :string
+#  name          :string
+#  phone         :string
+#  step          :string
+#  created_at    :datetime         not null
+#  updated_at    :datetime         not null
+#  program_id    :bigint
+#  telegram_id   :integer
 #
 # Indexes
 #

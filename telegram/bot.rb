@@ -11,6 +11,72 @@ Telegram::Bot::Client.run(token) do |bot|
       user = User.find_by(telegram_id: message.from.id)
     end
 
+    case user.step
+    when "last name"
+      user.last_name = message.text
+      user.step = "first name"
+      user.save
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Введите имя:"
+      )
+    when "first name"
+      user.first_name = message.text
+      user.step = "father name"
+      user.save
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Введите отчество:"
+      )
+    when "father name"
+      user.father_name = message.text
+      user.step = "gender"
+      user.save
+      genders = %w(male female)
+      each_gender = genders.map{ |gender| gender }
+      markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+        keyboard:           each_gender,
+        one_time_keyboard:  true
+      )
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Выберите пол:",
+        reply_markup:     markup
+      )
+    when "gender"
+      user.gender = message.text
+      user.step = "date_of_birth"
+      user.save
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Введите дату рождения:"
+      )
+    when "date_of_birth"
+      user.date_of_birth = message.text
+      user.step = "phone_number"
+      user.save
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Введите номер телефона:"
+      )
+    when "phone_number"
+      user.phone = message.text
+      user.step = "email"
+      user.save
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Введите эл. почту:"
+      )
+    when "email"
+      user.email = message.text
+      user.step = "sumbit"
+      user.save
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Submitted"
+      )
+    end
+
     case message.text
     when "/start"
       bot.api.send_message(
@@ -35,16 +101,22 @@ Telegram::Bot::Client.run(token) do |bot|
         text:             "Bye, #{message.from.username}!",
         reply_markup:     kb
       )
-    when "#{message.text}"
-      user.step = "#{message.text}"
-      bot.api.send_message(
-        chat_id:          message.chat.id,
-        text:             "Вы выбрали программу: #{message.text}"
-      )
-      user.update(program_id: Program.find_by(
-        price: "#{user.step}".split.last[0..-5].to_i).id
-      )
-      user.save
+    when message.text
+      if message.text.start_with?("Мой ДМС")
+        user.update(program_id: Program.find_by(
+          price: message.text.split.last[0..-5].to_i).id
+        )
+        bot.api.send_message(
+          chat_id:          message.chat.id,
+          text:             "Вы выбрали программу: #{message.text}"
+        )
+        user.step = "last name"
+        user.save
+        bot.api.send_message(
+          chat_id:          message.chat.id,
+          text:             "Введите фамилию:"
+        )
+      end
     end
   end
 end

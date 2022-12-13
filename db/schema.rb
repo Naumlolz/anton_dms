@@ -27,6 +27,13 @@ ActiveRecord::Schema.define(version: 2022_12_05_071848) do
     t.string "name"
     t.integer "telegram_id"
     t.string "step"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "father_name"
+    t.string "gender"
+    t.date "date_of_birth"
+    t.string "phone"
+    t.string "email"
     t.bigint "program_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
