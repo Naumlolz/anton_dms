@@ -10,10 +10,20 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_12_05_071848) do
+ActiveRecord::Schema.define(version: 2022_12_22_143839) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "dms_products", force: :cascade do |t|
+    t.jsonb "medical_sum"
+    t.string "name"
+    t.jsonb "price", array: true
+    t.jsonb "program", array: true
+    t.string "uid"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
 
   create_table "programs", force: :cascade do |t|
     t.string "title"

@@ -1,3 +1,5 @@
+require File.expand_path('../config/environment', __dir__)
+require 'telegram/bot'
 require "uri"
 require "json"
 require "net/http"
@@ -13,6 +15,15 @@ request.body = "{\"query\":\"{\\n  dms_products {\\n created_at\\n    id\\n    m
 
 response = https.request(request)
 res = JSON.parse(response.read_body)
-res['data']['dms_products'].each { |hash| p hash['program']}
+res['data']['dms_products'].each do |hash|
+  DmsProduct.create(
+    medical_sum: hash['medical_sum'],
+    name:        hash['name'],
+    price:       hash['price'],
+    program:     hash['program'],
+    uid:         hash['uid']
+  )
+end
 
 # "#{p hash['name']} #{p hash['price'][0]['price'].to_s}"
+
