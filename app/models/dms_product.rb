@@ -12,4 +12,5 @@
 #  updated_at  :datetime         not null
 #
 class DmsProduct < ApplicationRecord
+  has_many :users
 end

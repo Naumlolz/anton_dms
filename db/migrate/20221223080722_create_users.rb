@@ -11,7 +11,7 @@ class CreateUsers < ActiveRecord::Migration[6.1]
       t.date :date_of_birth
       t.string :phone
       t.string :email
-      t.belongs_to :program, foreign_key: true
+      t.belongs_to :dms_product, foreign_key: true
       t.timestamps
     end
   end

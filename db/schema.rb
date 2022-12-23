@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_12_22_143839) do
+ActiveRecord::Schema.define(version: 2022_12_23_080722) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -21,14 +21,6 @@ ActiveRecord::Schema.define(version: 2022_12_22_143839) do
     t.jsonb "price", array: true
     t.jsonb "program", array: true
     t.string "uid"
-    t.datetime "created_at", precision: 6, null: false
-    t.datetime "updated_at", precision: 6, null: false
-  end
-
-  create_table "programs", force: :cascade do |t|
-    t.string "title"
-    t.string "description"
-    t.integer "price"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
   end
@@ -44,11 +36,11 @@ ActiveRecord::Schema.define(version: 2022_12_22_143839) do
     t.date "date_of_birth"
     t.string "phone"
     t.string "email"
-    t.bigint "program_id"
+    t.bigint "dms_product_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["program_id"], name: "index_users_on_program_id"
+    t.index ["dms_product_id"], name: "index_users_on_dms_product_id"
   end
 
-  add_foreign_key "users", "programs"
+  add_foreign_key "users", "dms_products"
 end
