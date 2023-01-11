@@ -11,6 +11,15 @@ Telegram::Bot::Client.run(token) do |bot|
       user = User.find_by(telegram_id: message.from.id)
     end
 
+    def finish_with_bot(bot, message)
+      kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Bye, #{message.from.username}!",
+        reply_markup:     kb
+      )
+    end
+
     case user.step
     when "last name"
       user.last_name = message.text
@@ -88,25 +97,73 @@ Telegram::Bot::Client.run(token) do |bot|
         reply_markup:     markup
       )
     when "/end"
-      kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
-      bot.api.send_message(
-        chat_id:          message.chat.id,
-        text:             "Bye, #{message.from.username}!",
-        reply_markup:     kb
-      )
+      finish_with_bot(bot, message)
     when message.text
       if message.text.start_with?("Мой ДМС")
+        program_name = message.text
         user.update(dms_product_id: DmsProduct.find_by(name: message.text).id)
+        current_dms_product = user.dms_product
+        current_dms_product_options = ["Прочесть описание", "Выбрать программу"]
+        option_to_choose = current_dms_product_options.map { |option| option }
+        markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+          keyboard:           option_to_choose,
+          one_time_keyboard:  true
+        )
         bot.api.send_message(
           chat_id:          message.chat.id,
-          text:             "Вы выбрали программу: #{message.text}"
+          text:             "Выберите опцию:",
+          reply_markup:     markup
         )
-        user.update(step: "last name")
-        bot.api.send_message(
-          chat_id:          message.chat.id,
-          text:             "Введите фамилию:"
-        )
+        
+      end
+      bot.listen do |message|
+        if message.text == "Прочесть описание"
+          current_dms_product_titles = current_dms_product.program.map { |program| "#{program['title']}"}
+          markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+            keyboard:           current_dms_product_titles,
+            one_time_keyboard:  true
+          )
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Услуги:",
+            reply_markup:     markup
+          )
+          bot.listen do |hint|
+            if current_dms_product_titles.include?(hint.text)
+              current_dms_product.program.each do |program|
+                if program["title"] == hint.text
+                  program["description"].each do |program_item|
+                    bot.api.send_message(
+                      chat_id:          hint.chat.id,
+                      text:             program_item["items"],
+                    )
+                  end
+                end
+              end
+            else
+              finish_with_bot(bot, hint)
+              break
+            end
+          end
+        elsif message.text == "Выбрать программу"
+          user.update(dms_product_id: DmsProduct.find_by(name: program_name).id)
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Вы выбрали программу: #{program_name}"
+          )
+          user.update(step: "last name")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите фамилию:"
+          )
+        else
+          finish_with_bot(bot, message)
+            break
+        end
       end
     end
   end
 end
+
+
+
