@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2022_12_23_080722) do
+ActiveRecord::Schema.define(version: 2023_01_11_080440) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -23,6 +23,53 @@ ActiveRecord::Schema.define(version: 2022_12_23_080722) do
     t.string "uid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+  end
+
+  create_table "insurants", force: :cascade do |t|
+    t.integer "telegram_id"
+    t.string "step"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "father_name"
+    t.string "gender"
+    t.date "date_of_birth"
+    t.string "phone"
+    t.string "email"
+    t.string "place_of_birth"
+    t.string "serial_number_of_passport"
+    t.date "issued"
+    t.string "division_code"
+    t.string "issued_by"
+    t.string "registration_address"
+    t.string "actual_residence"
+    t.bigint "dms_product_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dms_product_id"], name: "index_insurants_on_dms_product_id"
+  end
+
+  create_table "policy_holders", force: :cascade do |t|
+    t.string "name"
+    t.integer "telegram_id"
+    t.string "step"
+    t.string "first_name"
+    t.string "last_name"
+    t.string "father_name"
+    t.string "gender"
+    t.date "date_of_birth"
+    t.string "phone"
+    t.string "email"
+    t.string "place_of_birth"
+    t.string "serial_number_of_passport"
+    t.date "issued"
+    t.string "division_code"
+    t.string "issued_by"
+    t.string "registration_address"
+    t.string "actual_residence"
+    t.bigint "dms_product_id"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+    t.index ["dms_product_id"], name: "index_policy_holders_on_dms_product_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -42,5 +89,7 @@ ActiveRecord::Schema.define(version: 2022_12_23_080722) do
     t.index ["dms_product_id"], name: "index_users_on_dms_product_id"
   end
 
+  add_foreign_key "insurants", "dms_products"
+  add_foreign_key "policy_holders", "dms_products"
   add_foreign_key "users", "dms_products"
 end
