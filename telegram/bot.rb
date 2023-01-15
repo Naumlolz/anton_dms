@@ -24,6 +24,133 @@ Telegram::Bot::Client.run(token) do |bot|
       )
     end
 
+    def user_profile_filling(user_profile, bot, message)
+      user_profile.update(step: "last name")
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Введите фамилию:"
+      )
+      bot.listen do |message|
+        case user_profile.step
+        when "last name"
+          user_profile.last_name = message.text
+          user_profile.update(step: "first name")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите имя:"
+          )
+        when "first name"
+          user_profile.first_name = message.text
+          user_profile.update(step: "father name")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите отчество:"
+          )
+        when "father name"
+          user_profile.father_name = message.text
+          user_profile.update(step: "gender")
+          genders = %w(Мужской Женский)
+          each_gender = genders.map{ |gender| gender }
+          markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+            keyboard:           each_gender,
+            one_time_keyboard:  true
+          )
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Выберите пол:",
+            reply_markup:     markup
+          )
+        when "gender"
+          user_profile.gender = message.text
+          user_profile.update(step: "date_of_birth")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите дату рождения:"
+          )
+        when "date_of_birth"
+          user_profile.date_of_birth = message.text
+          user_profile.update(step: "phone_number")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите номер телефона:"
+          )
+        when "phone_number"
+          user_profile.phone = message.text
+          user_profile.update(step: "email")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите эл. почту:"
+          )
+        when "email"
+          user_profile.email = message.text
+          user_profile.update(step: "place_of_birth")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Паспортные данные страхователя\nВведите место рождения:"
+          )
+        when "place_of_birth"
+          user_profile.place_of_birth = message.text
+          user_profile.update(step: "serial_number_of_passport")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Введите серию и номер паспорта:"
+          )
+        when "serial_number_of_passport"
+          user_profile.serial_number_of_passport = message.text
+          user_profile.update(step: "issued")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Когда выдан:"
+          )
+        when "issued"
+          user_profile.issued = message.text
+          user_profile.update(step: "division_code")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Код подразделения:"
+          )
+        when "division_code"
+          user_profile.division_code = message.text
+          user_profile.update(step: "issued_by")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Кем выдан:"
+          )
+        when "issued_by"
+          user_profile.issued_by = message.text
+          user_profile.update(step: "registration_address")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Адрес регистрации:"
+          )
+        when "registration_address"
+          user_profile.registration_address = message.text
+          user_profile.update(step: "actual_residence")
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Адрес фактического места жительства:"
+          )
+        when "actual_residence"
+          user_profile.actual_residence = message.text
+          user_profile.update(step: "submitted") and return
+        end
+      end
+    end
+
+    def fetch_info(user)
+      "ФИО: #{user.last_name} #{user.first_name} #{user.father_name}\n"\
+      "Дата рождения: #{user.date_of_birth}\n"\
+      "Пол: #{user.gender}\n"\
+      "Паспорт: #{user.serial_number_of_passport}\n"\
+      "Когда выдан: #{user.issued}\n"\
+      "Код подразделения: #{user.division_code}\n"\
+      "Кем выдан: #{user.issued_by}\n"\
+      "Адрес регистрации: #{user.registration_address}\n"\
+      "Адрес проживания: #{user.actual_residence}\n"\
+      "Контактный телефон: #{user.phone}\n"\
+      "Почта: #{user.email}"
+    end
+
     case message.text
     when "/start"
       bot.api.send_message(
@@ -97,234 +224,23 @@ Telegram::Bot::Client.run(token) do |bot|
             chat_id:          message.chat.id,
             text:             "Вы выбрали программу: #{program_name}.\nВведите контакты страхователя\n(Тот, кто оплачивает полис)"
           )
-          policyholder.update(step: "last name")
-          insurant.update(step: "last name")
+
+          user_profile_filling(policyholder, bot, message)
           bot.api.send_message(
             chat_id:          message.chat.id,
-            text:             "Введите фамилию:"
+            text:             "Введите контакты застрахованного\n(Тот, кто получает полис):"
           )
-          bot.listen do |message|
-            case policyholder.step
-            when "last name"
-              policyholder.last_name = message.text
-              policyholder.update(step: "first name")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите имя:"
-              )
-            when "first name"
-              policyholder.first_name = message.text
-              policyholder.update(step: "father name")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите отчество:"
-              )
-            when "father name"
-              policyholder.father_name = message.text
-              policyholder.update(step: "gender")
-              genders = %w(Мужской Женский)
-              each_gender = genders.map{ |gender| gender }
-              markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-                keyboard:           each_gender,
-                one_time_keyboard:  true
-              )
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Выберите пол:",
-                reply_markup:     markup
-              )
-            when "gender"
-              policyholder.gender = message.text
-              policyholder.update(step: "date_of_birth")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите дату рождения:"
-              )
-            when "date_of_birth"
-              policyholder.date_of_birth = message.text
-              policyholder.update(step: "phone_number")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите номер телефона:"
-              )
-            when "phone_number"
-              policyholder.phone = message.text
-              policyholder.update(step: "email")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите эл. почту:"
-              )
-            when "email"
-              policyholder.email = message.text
-              policyholder.update(step: "place_of_birth")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Паспортные данные страхователя\n(Тот, кто оплачивает полис)\nВведите место рождения:"
-              )
-            when "place_of_birth"
-              policyholder.place_of_birth = message.text
-              policyholder.update(step: "serial_number_of_passport")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите серию и номер паспорта:"
-              )
-            when "serial_number_of_passport"
-              policyholder.serial_number_of_passport = message.text
-              policyholder.update(step: "issued")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Когда выдан:"
-              )
-            when "issued"
-              policyholder.issued = message.text
-              policyholder.update(step: "division_code")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Код подразделения:"
-              )
-            when "division_code"
-              policyholder.division_code = message.text
-              policyholder.update(step: "issued_by")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Кем выдан:"
-              )
-            when "issued_by"
-              policyholder.issued_by = message.text
-              policyholder.update(step: "registration_address")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Адрес регистрации:"
-              )
-            when "registration_address"
-              policyholder.registration_address = message.text
-              policyholder.update(step: "actual_residence")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Адрес фактического места жительства:"
-              )
-            when "actual_residence"
-              policyholder.actual_residence = message.text
-              policyholder.update(step: "submitted")
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите контакты застрахованного\n(Тот, кто получает полис):"
-              )
-            end
+          user_profile_filling(insurant, bot, message)
 
-            case insurant.step
-            when "last name"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите фамилию:"
-              )
-              insurant.last_name = message.text
-              insurant.update(step: "first name")
-            when "first name"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите имя:"
-              )
-              insurant.first_name = message.text
-              insurant.update(step: "father name")
-            when "father name"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите отчество:"
-              )
-              insurant.father_name = message.text
-              insurant.update(step: "gender")
-            when "gender"
-              genders = %w(Мужской Женский)
-              each_gender = genders.map{ |gender| gender }
-              markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-                keyboard:           each_gender,
-                one_time_keyboard:  true
-              )
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Выберите пол:",
-                reply_markup:     markup
-              )
-              insurant.gender = message.text
-              insurant.update(step: "date_of_birth")
-            when "date_of_birth"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите дату рождения:"
-              )
-              insurant.date_of_birth = message.text
-              insurant.update(step: "phone_number")
-            when "phone_number"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите номер телефона:"
-              )
-              insurant.phone = message.text
-              insurant.update(step: "email")
-            when "email"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите эл. почту:"
-              )
-              insurant.email = message.text
-              insurant.update(step: "place_of_birth")
-            when "place_of_birth"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Паспортные данные застрахованного\n(Тот, кто получает полис)\nВведите место рождения:"
-              )
-              insurant.place_of_birth = message.text
-              insurant.update(step: "serial_number_of_passport")
-            when "serial_number_of_passport"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите серию и номер паспорта:"
-              )
-              insurant.serial_number_of_passport = message.text
-              insurant.update(step: "issued")
-            when "issued"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Когда выдан:"
-              )
-              insurant.issued = message.text
-              insurant.update(step: "division_code")
-            when "division_code"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Код подразделения:"
-              )
-              insurant.division_code = message.text
-              insurant.update(step: "issued_by")
-            when "issued_by"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Кем выдан:"
-              )
-              insurant.issued_by = message.text
-              insurant.update(step: "registration_address")
-            when "registration_address"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Адрес регистрации:"
-              )
-              insurant.registration_address = message.text
-              insurant.update(step: "actual_residence")
-            when "actual_residence"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Адрес фактического места жительства:"
-              )
-              insurant.actual_residence = message.text
-              insurant.update(step: "submitted")
-            when "submitted"
-              bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "submitted"
-              )
-            end
-          end
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Страхователь:\n#{fetch_info(policyholder)}"
+          )
+
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             "Застрахованный:\n#{fetch_info(insurant)}"
+          )
         else
           finish_with_bot(bot, message)
             break
