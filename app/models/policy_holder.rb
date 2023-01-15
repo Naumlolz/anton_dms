@@ -33,4 +33,5 @@
 #  fk_rails_...  (dms_product_id => dms_products.id)
 #
 class PolicyHolder < ApplicationRecord
+  belongs_to :dms_product
 end

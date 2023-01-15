@@ -13,4 +13,6 @@
 #
 class DmsProduct < ApplicationRecord
   has_many :users
+  has_many :insurants
+  has_many :policy_holders
 end
