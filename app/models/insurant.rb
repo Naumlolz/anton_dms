@@ -2,26 +2,26 @@
 #
 # Table name: insurants
 #
-#  id                        :bigint           not null, primary key
-#  actual_residence          :string
-#  date_of_birth             :date
-#  division_code             :string
-#  email                     :string
-#  father_name               :string
-#  first_name                :string
-#  gender                    :string
-#  issued                    :date
-#  issued_by                 :string
-#  last_name                 :string
-#  phone                     :string
-#  place_of_birth            :string
-#  registration_address      :string
-#  serial_number_of_passport :string
-#  step                      :string
-#  created_at                :datetime         not null
-#  updated_at                :datetime         not null
-#  dms_product_id            :bigint
-#  telegram_id               :integer
+#  id                   :bigint           not null, primary key
+#  birth_place          :string
+#  birthday             :date
+#  date_release         :date
+#  division_code        :string
+#  division_issuing     :string
+#  email                :string
+#  first_name           :string
+#  gender               :string
+#  last_name            :string
+#  passport             :string
+#  phone                :string
+#  registration_address :string
+#  residence            :string
+#  second_name          :string
+#  step                 :string
+#  created_at           :datetime         not null
+#  updated_at           :datetime         not null
+#  dms_product_id       :bigint
+#  telegram_id          :integer
 #
 # Indexes
 #

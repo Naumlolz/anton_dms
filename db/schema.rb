@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_01_11_080440) do
+ActiveRecord::Schema.define(version: 2023_01_18_072527) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -30,46 +30,45 @@ ActiveRecord::Schema.define(version: 2023_01_11_080440) do
     t.string "step"
     t.string "first_name"
     t.string "last_name"
-    t.string "father_name"
+    t.string "second_name"
     t.string "gender"
-    t.date "date_of_birth"
+    t.date "birthday"
     t.string "phone"
     t.string "email"
-    t.string "place_of_birth"
-    t.string "serial_number_of_passport"
-    t.date "issued"
+    t.string "birth_place"
+    t.string "passport"
+    t.date "date_release"
     t.string "division_code"
-    t.string "issued_by"
+    t.string "division_issuing"
     t.string "registration_address"
-    t.string "actual_residence"
+    t.string "residence"
     t.bigint "dms_product_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.index ["dms_product_id"], name: "index_insurants_on_dms_product_id"
   end
 
-  create_table "policy_holders", force: :cascade do |t|
-    t.string "name"
+  create_table "insureds", force: :cascade do |t|
     t.integer "telegram_id"
     t.string "step"
     t.string "first_name"
     t.string "last_name"
-    t.string "father_name"
+    t.string "second_name"
     t.string "gender"
-    t.date "date_of_birth"
+    t.date "birthday"
     t.string "phone"
     t.string "email"
-    t.string "place_of_birth"
-    t.string "serial_number_of_passport"
-    t.date "issued"
+    t.string "birth_place"
+    t.string "passport"
+    t.date "date_release"
     t.string "division_code"
-    t.string "issued_by"
+    t.string "division_issuing"
     t.string "registration_address"
-    t.string "actual_residence"
+    t.string "residence"
     t.bigint "dms_product_id"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
-    t.index ["dms_product_id"], name: "index_policy_holders_on_dms_product_id"
+    t.index ["dms_product_id"], name: "index_insureds_on_dms_product_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -90,6 +89,6 @@ ActiveRecord::Schema.define(version: 2023_01_11_080440) do
   end
 
   add_foreign_key "insurants", "dms_products"
-  add_foreign_key "policy_holders", "dms_products"
+  add_foreign_key "insureds", "dms_products"
   add_foreign_key "users", "dms_products"
 end

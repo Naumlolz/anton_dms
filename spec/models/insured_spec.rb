@@ -1,6 +1,6 @@
 # == Schema Information
 #
-# Table name: insurants
+# Table name: insureds
 #
 #  id                   :bigint           not null, primary key
 #  birth_place          :string
@@ -25,7 +25,7 @@
 #
 # Indexes
 #
-#  index_insurants_on_dms_product_id  (dms_product_id)
+#  index_insureds_on_dms_product_id  (dms_product_id)
 #
 # Foreign Keys
 #
@@ -33,6 +33,6 @@
 #
 require 'rails_helper'
 
-RSpec.describe Insurant, type: :model do
+RSpec.describe Insured, type: :model do
   pending "add some examples to (or delete) #{__FILE__}"
 end

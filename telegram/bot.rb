@@ -1,5 +1,9 @@
 require File.expand_path('../config/environment', __dir__)
 require 'telegram/bot'
+require "uri"
+require "json"
+require "net/http"
+require "date"
 
 token = "5982315763:AAFJcUzIQN7ufbw2VgyOEfwkez67aIJ8lak"
 
@@ -7,11 +11,11 @@ Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
     if !User.exists?(telegram_id: message.from.id)
       user = User.create(telegram_id: message.from.id, name: message.from.first_name)
-      policyholder = PolicyHolder.create(telegram_id: message.from.id)
+      insured = Insured.create(telegram_id: message.from.id)
       insurant = Insurant.create(telegram_id: message.from.id)
     else
       user = User.find_by(telegram_id: message.from.id)
-      policyholder = PolicyHolder.create(telegram_id: message.from.id)
+      insured = Insured.create(telegram_id: message.from.id)
       insurant = Insurant.create(telegram_id: message.from.id)
     end
 
@@ -41,13 +45,13 @@ Telegram::Bot::Client.run(token) do |bot|
           )
         when "first name"
           user_profile.first_name = message.text
-          user_profile.update(step: "father name")
+          user_profile.update(step: "second name")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Введите отчество:"
           )
-        when "father name"
-          user_profile.father_name = message.text
+        when "second name"
+          user_profile.second_name = message.text
           user_profile.update(step: "gender")
           genders = %w(Мужской Женский)
           each_gender = genders.map{ |gender| gender }
@@ -62,13 +66,13 @@ Telegram::Bot::Client.run(token) do |bot|
           )
         when "gender"
           user_profile.gender = message.text
-          user_profile.update(step: "date_of_birth")
+          user_profile.update(step: "birthday")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Введите дату рождения:"
           )
-        when "date_of_birth"
-          user_profile.date_of_birth = message.text
+        when "birthday"
+          user_profile.birthday = message.text
           user_profile.update(step: "phone_number")
           bot.api.send_message(
             chat_id:          message.chat.id,
@@ -83,27 +87,27 @@ Telegram::Bot::Client.run(token) do |bot|
           )
         when "email"
           user_profile.email = message.text
-          user_profile.update(step: "place_of_birth")
+          user_profile.update(step: "birth_place")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Паспортные данные страхователя\nВведите место рождения:"
           )
-        when "place_of_birth"
-          user_profile.place_of_birth = message.text
-          user_profile.update(step: "serial_number_of_passport")
+        when "birth_place"
+          user_profile.birth_place = message.text
+          user_profile.update(step: "passport")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Введите серию и номер паспорта:"
           )
-        when "serial_number_of_passport"
-          user_profile.serial_number_of_passport = message.text
-          user_profile.update(step: "issued")
+        when "passport"
+          user_profile.passport = message.text
+          user_profile.update(step: "date_release")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Когда выдан:"
           )
-        when "issued"
-          user_profile.issued = message.text
+        when "date_release"
+          user_profile.date_release = message.text
           user_profile.update(step: "division_code")
           bot.api.send_message(
             chat_id:          message.chat.id,
@@ -111,13 +115,13 @@ Telegram::Bot::Client.run(token) do |bot|
           )
         when "division_code"
           user_profile.division_code = message.text
-          user_profile.update(step: "issued_by")
+          user_profile.update(step: "division_issuing")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Кем выдан:"
           )
-        when "issued_by"
-          user_profile.issued_by = message.text
+        when "division_issuing"
+          user_profile.division_issuing = message.text
           user_profile.update(step: "registration_address")
           bot.api.send_message(
             chat_id:          message.chat.id,
@@ -125,30 +129,60 @@ Telegram::Bot::Client.run(token) do |bot|
           )
         when "registration_address"
           user_profile.registration_address = message.text
-          user_profile.update(step: "actual_residence")
+          user_profile.update(step: "residence")
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Адрес фактического места жительства:"
           )
-        when "actual_residence"
-          user_profile.actual_residence = message.text
+        when "residence"
+          user_profile.residence = message.text
           user_profile.update(step: "submitted") and return
         end
       end
     end
 
     def fetch_info(user)
-      "ФИО: #{user.last_name} #{user.first_name} #{user.father_name}\n"\
-      "Дата рождения: #{user.date_of_birth}\n"\
+      "ФИО: #{user.last_name} #{user.first_name} #{user.second_name}\n"\
+      "Дата рождения: #{user.birthday}\n"\
       "Пол: #{user.gender}\n"\
-      "Паспорт: #{user.serial_number_of_passport}\n"\
-      "Когда выдан: #{user.issued}\n"\
+      "Паспорт: #{user.passport}\n"\
+      "Когда выдан: #{user.date_release}\n"\
       "Код подразделения: #{user.division_code}\n"\
-      "Кем выдан: #{user.issued_by}\n"\
+      "Кем выдан: #{user.division_issuing}\n"\
       "Адрес регистрации: #{user.registration_address}\n"\
-      "Адрес проживания: #{user.actual_residence}\n"\
+      "Адрес проживания: #{user.residence}\n"\
       "Контактный телефон: #{user.phone}\n"\
       "Почта: #{user.email}"
+    end
+
+    def fetch_order_id
+      url = URI("https://dev.api.etnamed.ru/v1/graphql")
+
+      https = Net::HTTP.new(url.host, url.port)
+      https.use_ssl = true
+
+      request = Net::HTTP::Post.new(url)
+      request["Content-Type"] = "application/json"
+      request.body = "{\"query\":\"mutation M {\\n  dmsCreateOrderNumber {\\n    order_id\\n  }\\n}\",\"variables\":{}}"
+
+      response = https.request(request)
+      res = JSON.parse(response.read_body)
+      res['data']['dmsCreateOrderNumber']['order_id']
+    end
+
+    def fetch_payment_link(param_insurant, param_insured, order_id, product_id, start_date)
+      url = URI("https://dev.api.etnamed.ru/v1/graphql")
+
+      https = Net::HTTP.new(url.host, url.port)
+      https.use_ssl = true
+
+      request = Net::HTTP::Post.new(url)
+      request["Content-Type"] = "application/json"
+      request.body = "{\"query\":\"mutation DMSCreateOrder {\\n  dmsCreateOrder(arg: {back_url: \\\"https://dms.etnamed.ru\\\", insurant: \\\"#{param_insurant}\\\", insured: \\\"#{param_insured}\\\", order_id: \\\"#{order_id}\\\", product_id: #{product_id}, promo_code: \\\"\\\", start_date: \\\"#{start_date}\\\", payment_method: \\\"bank_card\\\", form_guid: \\\"\\\", offer_guid: \\\"\\\"}) {\\n    error\\n    ok\\n    order_id\\n    payment_link\\n    __typename\\n  }\\n}\\n\",\"variables\":{}}"
+
+      response = https.request(request)
+      res = JSON.parse(response.read_body)
+      res['data']['dmsCreateOrder']['payment_link']
     end
 
     case message.text
@@ -218,28 +252,73 @@ Telegram::Bot::Client.run(token) do |bot|
             end
           end
         elsif message.text == "Выбрать программу"
-          policyholder.update(dms_product_id: DmsProduct.find_by(name: program_name).id)
+          insured.update(dms_product_id: DmsProduct.find_by(name: program_name).id)
           insurant.update(dms_product_id: DmsProduct.find_by(name: program_name).id)
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Вы выбрали программу: #{program_name}.\nВведите контакты страхователя\n(Тот, кто оплачивает полис)"
           )
 
-          user_profile_filling(policyholder, bot, message)
+          user_profile_filling(insurant, bot, message)
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             "Введите контакты застрахованного\n(Тот, кто получает полис):"
           )
-          user_profile_filling(insurant, bot, message)
+          user_profile_filling(insured, bot, message)
 
           bot.api.send_message(
             chat_id:          message.chat.id,
-            text:             "Страхователь:\n#{fetch_info(policyholder)}"
+            text:             "Страхователь:\n#{fetch_info(insurant)}"
           )
 
           bot.api.send_message(
             chat_id:          message.chat.id,
-            text:             "Застрахованный:\n#{fetch_info(insurant)}"
+            text:             "Застрахованный:\n#{fetch_info(insured)}"
+          )
+
+          fetch_order_id
+
+          new_insurant = {
+            "last_name": "#{insurant.last_name}",
+            "first_name": "#{insurant.first_name}",
+            "second_name": "#{insurant.second_name}",
+            "bithday": "#{insurant.birthday}",
+            "passport": "#{insurant.passport}",
+            "division_code": "#{insurant.division_code}",
+            "division_issuing": "#{insurant.division_issuing}",
+            "date_release": "#{insurant.date_release}",
+            "birth_place": "#{insurant.birth_place}",
+            "phone": "#{insurant.phone}",
+            "email": "#{insurant.email}",
+            "registration_address": "#{insurant.registration_address}",
+            "residence": "#{insurant.residence}"
+          }
+
+          new_insured = [
+            {
+              "last_name": "#{insured.last_name}",
+              "first_name": "#{insured.first_name}",
+              "second_name": "#{insured.second_name}",
+              "bithday": "#{insured.birthday}",
+              "passport": "#{insured.passport}",
+              "division_code": "#{insured.division_code}",
+              "division_issuing": "#{insured.division_issuing}",
+              "date_release": "#{insured.date_release}",
+              "birth_place": "#{insured.birth_place}",
+              "phone": "#{insured.phone}",
+              "email": "#{insured.email}",
+              "registration_address": "#{insured.registration_address}",
+              "residence": "#{insured.residence}"
+            }
+          ]
+
+          code_insurant = Base64.strict_encode64(JSON.pretty_generate(new_insurant))
+          code_insured = Base64.strict_encode64(JSON.pretty_generate(new_insured))
+          start_date = Date.today + 1.weeks
+
+          bot.api.send_message(
+            chat_id:          message.chat.id,
+            text:             fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product.id, start_date)
           )
         else
           finish_with_bot(bot, message)
