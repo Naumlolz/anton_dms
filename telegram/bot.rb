@@ -185,6 +185,19 @@ Telegram::Bot::Client.run(token) do |bot|
       res['data']['dmsCreateOrder']['payment_link']
     end
 
+    def final_submit_keyboard(bot, message)
+      variants = ['Добавить застрахованное лицо', 'Перейти к оплате'].map { |variant| variant }
+      markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+        keyboard:           variants,
+        one_time_keyboard:  true
+      )
+      bot.api.send_message(
+        chat_id:          message.chat.id,
+        text:             "Выберите действие:",
+        reply_markup:     markup
+      )
+    end
+
     case message.text
     when "/start"
       bot.api.send_message(
@@ -260,11 +273,45 @@ Telegram::Bot::Client.run(token) do |bot|
           )
 
           user_profile_filling(insurant, bot, message)
+
+          each_variant = %w(Да Нет).map { |variant| variant }
+          markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+            keyboard:           each_variant,
+            one_time_keyboard:  true
+          )
           bot.api.send_message(
             chat_id:          message.chat.id,
-            text:             "Введите контакты застрахованного\n(Тот, кто получает полис):"
+            text:             "Введите контакты застрахованного\n(Тот, кто получает полис):\nСовпадает со страхователем?",
+            reply_markup:     markup
           )
-          user_profile_filling(insured, bot, message)
+          bot.listen do |message|
+            if message.text == 'Да'
+              insured.update(
+                first_name: insurant.first_name,
+                last_name: insurant.last_name,
+                second_name: insurant.second_name,
+                birthday: insurant.birthday,
+                gender: insurant.gender,
+                passport: insurant.passport,
+                division_code: insurant.division_code,
+                division_issuing: insurant.division_issuing,
+                date_release: insurant.date_release,
+                birth_place: insurant.birth_place,
+                phone: insurant.phone,
+                email: insurant.email,
+                registration_address: insurant.registration_address,
+                residence: insurant.residence
+              )
+              break
+            elsif message.text == 'Нет'
+              bot.api.send_message(
+                chat_id:          message.chat.id,
+                text:             "Введите контакты застрахованного\n(Тот, кто получает полис):"
+              )
+              user_profile_filling(insured, bot, message)
+              break
+            end
+          end
 
           bot.api.send_message(
             chat_id:          message.chat.id,
@@ -276,7 +323,24 @@ Telegram::Bot::Client.run(token) do |bot|
             text:             "Застрахованный:\n#{fetch_info(insured)}"
           )
 
-          fetch_order_id
+          insureds = []
+          insureds.push(insured)
+
+          final_submit_keyboard(bot, message)
+
+          bot.listen do |message|
+            if message.text == 'Добавить застрахованное лицо'
+              new_insured = Insured.create(telegram_id: message.from.id, dms_product_id: insurant.dms_product_id)
+              user_profile_filling(new_insured, bot, message)
+              insureds.push(new_insured)
+              final_submit_keyboard(bot, message)
+            elsif message.text == 'Перейти к оплате'
+              break
+            end
+          end
+
+          # p insureds
+          new_insureds = []
 
           new_insurant = {
             "last_name": "#{insurant.last_name}",
@@ -287,6 +351,7 @@ Telegram::Bot::Client.run(token) do |bot|
             "division_code": "#{insurant.division_code}",
             "division_issuing": "#{insurant.division_issuing}",
             "date_release": "#{insurant.date_release}",
+            "gender": "#{insurant.gender}",
             "birth_place": "#{insurant.birth_place}",
             "phone": "#{insurant.phone}",
             "email": "#{insurant.email}",
@@ -294,32 +359,58 @@ Telegram::Bot::Client.run(token) do |bot|
             "residence": "#{insurant.residence}"
           }
 
-          new_insured = [
-            {
-              "last_name": "#{insured.last_name}",
-              "first_name": "#{insured.first_name}",
-              "second_name": "#{insured.second_name}",
-              "bithday": "#{insured.birthday}",
-              "passport": "#{insured.passport}",
-              "division_code": "#{insured.division_code}",
-              "division_issuing": "#{insured.division_issuing}",
-              "date_release": "#{insured.date_release}",
-              "birth_place": "#{insured.birth_place}",
-              "phone": "#{insured.phone}",
-              "email": "#{insured.email}",
-              "registration_address": "#{insured.registration_address}",
-              "residence": "#{insured.residence}"
-            }
-          ]
+          insureds.each do |new_insured|
+            new_insureds.push(
+                {
+                "last_name": "#{new_insured.last_name}",
+                "first_name": "#{new_insured.first_name}",
+                "second_name": "#{new_insured.second_name}",
+                "bithday": "#{new_insured.birthday}",
+                "passport": "#{new_insured.passport}",
+                "division_code": "#{new_insured.division_code}",
+                "division_issuing": "#{new_insured.division_issuing}",
+                "gender": "#{new_insured.gender}",
+                "date_release": "#{new_insured.date_release}",
+                "birth_place": "#{new_insured.birth_place}",
+                "phone": "#{new_insured.phone}",
+                "email": "#{new_insured.email}",
+                "registration_address": "#{new_insured.registration_address}",
+                "residence": "#{new_insured.residence}"
+              }
+            )
+          end
 
+          new_insureds
+
+          fetch_order_id
           code_insurant = Base64.strict_encode64(JSON.pretty_generate(new_insurant))
-          code_insured = Base64.strict_encode64(JSON.pretty_generate(new_insured))
+          code_insured = Base64.strict_encode64(JSON.pretty_generate(new_insureds))
           start_date = Date.today + 1.weeks
+
+          # p fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product.id, start_date)
 
           bot.api.send_message(
             chat_id:          message.chat.id,
             text:             fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product.id, start_date)
           )
+
+          # new_insured = [
+          #   {
+          #     "last_name": "#{insured.last_name}",
+          #     "first_name": "#{insured.first_name}",
+          #     "second_name": "#{insured.second_name}",
+          #     "bithday": "#{insured.birthday}",
+          #     "passport": "#{insured.passport}",
+          #     "division_code": "#{insured.division_code}",
+          #     "division_issuing": "#{insured.division_issuing}",
+          #     "date_release": "#{insured.date_release}",
+          #     "birth_place": "#{insured.birth_place}",
+          #     "phone": "#{insured.phone}",
+          #     "email": "#{insured.email}",
+          #     "registration_address": "#{insured.registration_address}",
+          #     "residence": "#{insured.residence}"
+          #   }
+          # ]
         else
           finish_with_bot(bot, message)
             break
