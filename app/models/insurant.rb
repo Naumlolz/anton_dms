@@ -32,5 +32,10 @@
 #  fk_rails_...  (dms_product_id => dms_products.id)
 #
 class Insurant < ApplicationRecord
+  validates :first_name, :last_name, :second_name, :phone, :email, presence: true
+  validates :gender, :birthday, :birth_place, :passport, :date_release, presence: true
+  validates :division_code, :division_issuing, :registration_address, presence: true
+  validates :residence, presence: true
+
   belongs_to :dms_product
 end

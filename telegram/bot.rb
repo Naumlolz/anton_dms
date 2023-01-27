@@ -1,11 +1,11 @@
 require File.expand_path('../config/environment', __dir__)
 require 'telegram/bot'
-require "uri"
-require "json"
-require "net/http"
-require "date"
+require 'uri'
+require 'json'
+require 'net/http'
+require 'date'
 
-token = "5982315763:AAFJcUzIQN7ufbw2VgyOEfwkez67aIJ8lak"
+token = '5982315763:AAFJcUzIQN7ufbw2VgyOEfwkez67aIJ8lak'
 
 Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|
@@ -22,121 +22,121 @@ Telegram::Bot::Client.run(token) do |bot|
     def finish_with_bot(bot, message)
       kb = Telegram::Bot::Types::ReplyKeyboardRemove.new(remove_keyboard: true)
       bot.api.send_message(
-        chat_id:          message.chat.id,
-        text:             "Bye, #{message.from.username}!",
-        reply_markup:     kb
+        chat_id: message.chat.id,
+        text: "Bye, #{message.from.username}!",
+        reply_markup: kb
       )
     end
 
     def user_profile_filling(user_profile, bot, message)
-      user_profile.update(step: "last name")
+      user_profile.update(step: 'last name')
       bot.api.send_message(
-        chat_id:          message.chat.id,
-        text:             "Введите фамилию:"
+        chat_id: message.chat.id,
+        text: 'Введите фамилию:'
       )
       bot.listen do |message|
         case user_profile.step
-        when "last name"
+        when 'last name'
           user_profile.last_name = message.text
-          user_profile.update(step: "first name")
+          user_profile.update(step: 'first name')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите имя:"
+            chat_id: message.chat.id,
+            text: 'Введите имя:'
           )
-        when "first name"
+        when 'first name'
           user_profile.first_name = message.text
-          user_profile.update(step: "second name")
+          user_profile.update(step: 'second name')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите отчество:"
+            chat_id: message.chat.id,
+            text: 'Введите отчество:'
           )
-        when "second name"
+        when 'second name'
           user_profile.second_name = message.text
-          user_profile.update(step: "gender")
-          genders = %w(Мужской Женский)
-          each_gender = genders.map{ |gender| gender }
+          user_profile.update(step: 'gender')
+          genders = %w[Мужской Женский]
+          each_gender = genders.map { |gender| gender }
           markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-            keyboard:           each_gender,
-            one_time_keyboard:  true
+            keyboard: each_gender,
+            one_time_keyboard: true
           )
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Выберите пол:",
-            reply_markup:     markup
+            chat_id: message.chat.id,
+            text: 'Выберите пол:',
+            reply_markup: markup
           )
-        when "gender"
+        when 'gender'
           user_profile.gender = message.text
-          user_profile.update(step: "birthday")
+          user_profile.update(step: 'birthday')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите дату рождения:"
+            chat_id: message.chat.id,
+            text: 'Введите дату рождения:'
           )
-        when "birthday"
+        when 'birthday'
           user_profile.birthday = message.text
-          user_profile.update(step: "phone_number")
+          user_profile.update(step: 'phone_number')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите номер телефона:"
+            chat_id: message.chat.id,
+            text: 'Введите номер телефона:'
           )
-        when "phone_number"
+        when 'phone_number'
           user_profile.phone = message.text
-          user_profile.update(step: "email")
+          user_profile.update(step: 'email')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите эл. почту:"
+            chat_id: message.chat.id,
+            text: 'Введите эл. почту:'
           )
-        when "email"
+        when 'email'
           user_profile.email = message.text
-          user_profile.update(step: "birth_place")
+          user_profile.update(step: 'birth_place')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Паспортные данные страхователя\nВведите место рождения:"
+            chat_id: message.chat.id,
+            text: "Паспортные данные страхователя\nВведите место рождения:"
           )
-        when "birth_place"
+        when 'birth_place'
           user_profile.birth_place = message.text
-          user_profile.update(step: "passport")
+          user_profile.update(step: 'passport')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите серию и номер паспорта:"
+            chat_id: message.chat.id,
+            text: 'Введите серию и номер паспорта:'
           )
-        when "passport"
+        when 'passport'
           user_profile.passport = message.text
-          user_profile.update(step: "date_release")
+          user_profile.update(step: 'date_release')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Когда выдан:"
+            chat_id: message.chat.id,
+            text: 'Когда выдан:'
           )
-        when "date_release"
+        when 'date_release'
           user_profile.date_release = message.text
-          user_profile.update(step: "division_code")
+          user_profile.update(step: 'division_code')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Код подразделения:"
+            chat_id: message.chat.id,
+            text: 'Код подразделения:'
           )
-        when "division_code"
+        when 'division_code'
           user_profile.division_code = message.text
-          user_profile.update(step: "division_issuing")
+          user_profile.update(step: 'division_issuing')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Кем выдан:"
+            chat_id: message.chat.id,
+            text: 'Кем выдан:'
           )
-        when "division_issuing"
+        when 'division_issuing'
           user_profile.division_issuing = message.text
-          user_profile.update(step: "registration_address")
+          user_profile.update(step: 'registration_address')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Адрес регистрации:"
+            chat_id: message.chat.id,
+            text: 'Адрес регистрации:'
           )
-        when "registration_address"
+        when 'registration_address'
           user_profile.registration_address = message.text
-          user_profile.update(step: "residence")
+          user_profile.update(step: 'residence')
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Адрес фактического места жительства:"
+            chat_id: message.chat.id,
+            text: 'Адрес фактического места жительства:'
           )
-        when "residence"
+        when 'residence'
           user_profile.residence = message.text
-          user_profile.update(step: "submitted") and return
+          user_profile.update(step: 'submitted') and return
         end
       end
     end
@@ -156,13 +156,13 @@ Telegram::Bot::Client.run(token) do |bot|
     end
 
     def fetch_order_id
-      url = URI("https://dev.api.etnamed.ru/v1/graphql")
+      url = URI('https://dev.api.etnamed.ru/v1/graphql')
 
       https = Net::HTTP.new(url.host, url.port)
       https.use_ssl = true
 
       request = Net::HTTP::Post.new(url)
-      request["Content-Type"] = "application/json"
+      request['Content-Type'] = 'application/json'
       request.body = "{\"query\":\"mutation M {\\n  dmsCreateOrderNumber {\\n    order_id\\n  }\\n}\",\"variables\":{}}"
 
       response = https.request(request)
@@ -171,13 +171,13 @@ Telegram::Bot::Client.run(token) do |bot|
     end
 
     def fetch_payment_link(param_insurant, param_insured, order_id, product_id, start_date)
-      url = URI("https://dev.api.etnamed.ru/v1/graphql")
+      url = URI('https://dev.api.etnamed.ru/v1/graphql')
 
       https = Net::HTTP.new(url.host, url.port)
       https.use_ssl = true
 
       request = Net::HTTP::Post.new(url)
-      request["Content-Type"] = "application/json"
+      request['Content-Type'] = 'application/json'
       request.body = "{\"query\":\"mutation DMSCreateOrder {\\n  dmsCreateOrder(arg: {back_url: \\\"https://dms.etnamed.ru\\\", insurant: \\\"#{param_insurant}\\\", insured: \\\"#{param_insured}\\\", order_id: \\\"#{order_id}\\\", product_id: #{product_id}, promo_code: \\\"\\\", start_date: \\\"#{start_date}\\\", payment_method: \\\"bank_card\\\", form_guid: \\\"\\\", offer_guid: \\\"\\\"}) {\\n    error\\n    ok\\n    order_id\\n    payment_link\\n    __typename\\n  }\\n}\\n\",\"variables\":{}}"
 
       response = https.request(request)
@@ -188,73 +188,73 @@ Telegram::Bot::Client.run(token) do |bot|
     def final_submit_keyboard(bot, message)
       variants = ['Добавить застрахованное лицо', 'Перейти к оплате'].map { |variant| variant }
       markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-        keyboard:           variants,
-        one_time_keyboard:  true
+        keyboard: variants,
+        one_time_keyboard: true
       )
       bot.api.send_message(
-        chat_id:          message.chat.id,
-        text:             "Выберите действие:",
-        reply_markup:     markup
+        chat_id: message.chat.id,
+        text: 'Выберите действие:',
+        reply_markup: markup
       )
     end
 
     case message.text
-    when "/start"
+    when '/start'
       bot.api.send_message(
-        chat_id:    message.chat.id,
-        text:       "Добровольное медицинское страхование.\nДМС - правильный выбор для тех, кто ценит своё время сервис и качество.\nЕсли Вам потребуется медицинская помощь, Вы сможете попасть к врачу в удобное время, быстро сдать анализы и пройти лечение"
+        chat_id: message.chat.id,
+        text: "Добровольное медицинское страхование.\nДМС - правильный выбор для тех, кто ценит своё время сервис и качество.\nЕсли Вам потребуется медицинская помощь, Вы сможете попасть к врачу в удобное время, быстро сдать анализы и пройти лечение"
       )
       dms_products = DmsProduct.all
-      arr_of_dms_products = dms_products.map{ |dms_product| "#{dms_product.name}" }
+      arr_of_dms_products = dms_products.map { |dms_product| dms_product.name.to_s }
       markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-        keyboard:           arr_of_dms_products,
-        one_time_keyboard:  true
+        keyboard: arr_of_dms_products,
+        one_time_keyboard: true
       )
       bot.api.send_message(
-        chat_id:          message.chat.id,
-        text:             "Программы ДМС:",
-        reply_markup:     markup
+        chat_id: message.chat.id,
+        text: 'Программы ДМС:',
+        reply_markup: markup
       )
-    when "/end"
+    when '/end'
       finish_with_bot(bot, message)
     when message.text
-      if message.text.start_with?("Мой ДМС")
+      if message.text.start_with?('Мой ДМС')
         program_name = message.text
         user.update(dms_product_id: DmsProduct.find_by(name: message.text).id)
         current_dms_product = user.dms_product
-        current_dms_product_options = ["Прочесть описание", "Выбрать программу"]
+        current_dms_product_options = ['Прочесть описание', 'Выбрать программу']
         option_to_choose = current_dms_product_options.map { |option| option }
         markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-          keyboard:           option_to_choose,
-          one_time_keyboard:  true
+          keyboard: option_to_choose,
+          one_time_keyboard: true
         )
         bot.api.send_message(
-          chat_id:          message.chat.id,
-          text:             "Выберите опцию:",
-          reply_markup:     markup
+          chat_id: message.chat.id,
+          text: 'Выберите опцию:',
+          reply_markup: markup
         )
-        
       end
       bot.listen do |message|
-        if message.text == "Прочесть описание"
-          current_dms_product_titles = current_dms_product.program.map { |program| "#{program['title']}"}
+        case message.text
+        when 'Прочесть описание'
+          current_dms_product_titles = current_dms_product.program.map { |program| program['title'].to_s }
           markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-            keyboard:           current_dms_product_titles,
-            one_time_keyboard:  true
+            keyboard: current_dms_product_titles,
+            one_time_keyboard: true
           )
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Услуги:",
-            reply_markup:     markup
+            chat_id: message.chat.id,
+            text: 'Услуги:',
+            reply_markup: markup
           )
           bot.listen do |hint|
             if current_dms_product_titles.include?(hint.text)
               current_dms_product.program.each do |program|
-                if program["title"] == hint.text
-                  program["description"].each do |program_item|
+                if program['title'] == hint.text
+                  program['description'].each do |program_item|
                     bot.api.send_message(
-                      chat_id:          hint.chat.id,
-                      text:             program_item["items"],
+                      chat_id: hint.chat.id,
+                      text: program_item['items']
                     )
                   end
                 end
@@ -264,28 +264,29 @@ Telegram::Bot::Client.run(token) do |bot|
               break
             end
           end
-        elsif message.text == "Выбрать программу"
+        when 'Выбрать программу'
           insured.update(dms_product_id: DmsProduct.find_by(name: program_name).id)
           insurant.update(dms_product_id: DmsProduct.find_by(name: program_name).id)
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Вы выбрали программу: #{program_name}.\nВведите контакты страхователя\n(Тот, кто оплачивает полис)"
+            chat_id: message.chat.id,
+            text: "Вы выбрали программу: #{program_name}.\nВведите контакты страхователя\n(Тот, кто оплачивает полис)"
           )
 
           user_profile_filling(insurant, bot, message)
 
-          each_variant = %w(Да Нет).map { |variant| variant }
+          each_variant = %w[Да Нет].map { |variant| variant }
           markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-            keyboard:           each_variant,
-            one_time_keyboard:  true
+            keyboard: each_variant,
+            one_time_keyboard: true
           )
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Введите контакты застрахованного\n(Тот, кто получает полис):\nСовпадает со страхователем?",
-            reply_markup:     markup
+            chat_id: message.chat.id,
+            text: "Введите контакты застрахованного\n(Тот, кто получает полис):\nСовпадает со страхователем?",
+            reply_markup: markup
           )
           bot.listen do |message|
-            if message.text == 'Да'
+            case message.text
+            when 'Да'
               insured.update(
                 first_name: insurant.first_name,
                 last_name: insurant.last_name,
@@ -303,10 +304,10 @@ Telegram::Bot::Client.run(token) do |bot|
                 residence: insurant.residence
               )
               break
-            elsif message.text == 'Нет'
+            when 'Нет'
               bot.api.send_message(
-                chat_id:          message.chat.id,
-                text:             "Введите контакты застрахованного\n(Тот, кто получает полис):"
+                chat_id: message.chat.id,
+                text: "Введите контакты застрахованного\n(Тот, кто получает полис):"
               )
               user_profile_filling(insured, bot, message)
               break
@@ -314,13 +315,13 @@ Telegram::Bot::Client.run(token) do |bot|
           end
 
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Страхователь:\n#{fetch_info(insurant)}"
+            chat_id: message.chat.id,
+            text: "Страхователь:\n#{fetch_info(insurant)}"
           )
 
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             "Застрахованный:\n#{fetch_info(insured)}"
+            chat_id: message.chat.id,
+            text: "Застрахованный:\n#{fetch_info(insured)}"
           )
 
           insureds = []
@@ -329,91 +330,73 @@ Telegram::Bot::Client.run(token) do |bot|
           final_submit_keyboard(bot, message)
 
           bot.listen do |message|
-            if message.text == 'Добавить застрахованное лицо'
+            case message.text
+            when 'Добавить застрахованное лицо'
               new_insured = Insured.create(telegram_id: message.from.id, dms_product_id: insurant.dms_product_id)
               user_profile_filling(new_insured, bot, message)
               insureds.push(new_insured)
               final_submit_keyboard(bot, message)
-            elsif message.text == 'Перейти к оплате'
+            when 'Перейти к оплате'
               break
             end
           end
 
-          # p insureds
           new_insureds = []
 
           new_insurant = {
-            "last_name": "#{insurant.last_name}",
-            "first_name": "#{insurant.first_name}",
-            "second_name": "#{insurant.second_name}",
-            "bithday": "#{insurant.birthday}",
-            "passport": "#{insurant.passport}",
-            "division_code": "#{insurant.division_code}",
-            "division_issuing": "#{insurant.division_issuing}",
-            "date_release": "#{insurant.date_release}",
-            "gender": "#{insurant.gender}",
-            "birth_place": "#{insurant.birth_place}",
-            "phone": "#{insurant.phone}",
-            "email": "#{insurant.email}",
-            "registration_address": "#{insurant.registration_address}",
-            "residence": "#{insurant.residence}"
+            "last_name": insurant.last_name.to_s,
+            "first_name": insurant.first_name.to_s,
+            "second_name": insurant.second_name.to_s,
+            "bithday": insurant.birthday.to_s,
+            "passport": insurant.passport.to_s,
+            "division_code": insurant.division_code.to_s,
+            "division_issuing": insurant.division_issuing.to_s,
+            "date_release": insurant.date_release.to_s,
+            "gender": insurant.gender.to_s,
+            "birth_place": insurant.birth_place.to_s,
+            "phone": insurant.phone.to_s,
+            "email": insurant.email.to_s,
+            "registration_address": insurant.registration_address.to_s,
+            "residence": insurant.residence.to_s
           }
 
           insureds.each do |new_insured|
             new_insureds.push(
-                {
-                "last_name": "#{new_insured.last_name}",
-                "first_name": "#{new_insured.first_name}",
-                "second_name": "#{new_insured.second_name}",
-                "bithday": "#{new_insured.birthday}",
-                "passport": "#{new_insured.passport}",
-                "division_code": "#{new_insured.division_code}",
-                "division_issuing": "#{new_insured.division_issuing}",
-                "gender": "#{new_insured.gender}",
-                "date_release": "#{new_insured.date_release}",
-                "birth_place": "#{new_insured.birth_place}",
-                "phone": "#{new_insured.phone}",
-                "email": "#{new_insured.email}",
-                "registration_address": "#{new_insured.registration_address}",
-                "residence": "#{new_insured.residence}"
+              {
+                "last_name": new_insured.last_name.to_s,
+                "first_name": new_insured.first_name.to_s,
+                "second_name": new_insured.second_name.to_s,
+                "bithday": new_insured.birthday.to_s,
+                "passport": new_insured.passport.to_s,
+                "division_code": new_insured.division_code.to_s,
+                "division_issuing": new_insured.division_issuing.to_s,
+                "gender": new_insured.gender.to_s,
+                "date_release": new_insured.date_release.to_s,
+                "birth_place": new_insured.birth_place.to_s,
+                "phone": new_insured.phone.to_s,
+                "email": new_insured.email.to_s,
+                "registration_address": new_insured.registration_address.to_s,
+                "residence": new_insured.residence.to_s
               }
             )
           end
-
-          new_insureds
 
           fetch_order_id
           code_insurant = Base64.strict_encode64(JSON.pretty_generate(new_insurant))
           code_insured = Base64.strict_encode64(JSON.pretty_generate(new_insureds))
           start_date = Date.today + 1.weeks
 
-          # p fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product.id, start_date)
-
           bot.api.send_message(
-            chat_id:          message.chat.id,
-            text:             fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product.id, start_date)
+            chat_id: message.chat.id,
+            text: fetch_payment_link(code_insurant,
+                                     code_insured,
+                                     fetch_order_id,
+                                     insurant.dms_product.id,
+                                     start_date)
           )
-
-          # new_insured = [
-          #   {
-          #     "last_name": "#{insured.last_name}",
-          #     "first_name": "#{insured.first_name}",
-          #     "second_name": "#{insured.second_name}",
-          #     "bithday": "#{insured.birthday}",
-          #     "passport": "#{insured.passport}",
-          #     "division_code": "#{insured.division_code}",
-          #     "division_issuing": "#{insured.division_issuing}",
-          #     "date_release": "#{insured.date_release}",
-          #     "birth_place": "#{insured.birth_place}",
-          #     "phone": "#{insured.phone}",
-          #     "email": "#{insured.email}",
-          #     "registration_address": "#{insured.registration_address}",
-          #     "residence": "#{insured.residence}"
-          #   }
-          # ]
         else
           finish_with_bot(bot, message)
-            break
+          break
         end
       end
     end
