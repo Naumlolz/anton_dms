@@ -1,7 +1,7 @@
 class CreateInsureds < ActiveRecord::Migration[6.1]
   def change
     create_table :insureds do |t|
-      t.integer :telegram_id
+      t.integer :telegram_id, :limit => 8
       t.string :step
       t.string :first_name
       t.string :last_name

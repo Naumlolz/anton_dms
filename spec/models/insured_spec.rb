@@ -21,7 +21,7 @@
 #  created_at           :datetime         not null
 #  updated_at           :datetime         not null
 #  dms_product_id       :bigint
-#  telegram_id          :integer
+#  telegram_id          :bigint
 #
 # Indexes
 #
