@@ -198,12 +198,7 @@ Telegram::Bot::Client.run(token) do |bot|
       )
     end
 
-    case message.text
-    when '/start'
-      bot.api.send_message(
-        chat_id: message.chat.id,
-        text: "Добровольное медицинское страхование.\nДМС - правильный выбор для тех, кто ценит своё время сервис и качество.\nЕсли Вам потребуется медицинская помощь, Вы сможете попасть к врачу в удобное время, быстро сдать анализы и пройти лечение"
-      )
+    def dms_products_keyboard(bot, message)
       dms_products = DmsProduct.all
       arr_of_dms_products = dms_products.map { |dms_product| dms_product.name.to_s }
       markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
@@ -215,6 +210,29 @@ Telegram::Bot::Client.run(token) do |bot|
         text: 'Программы ДМС:',
         reply_markup: markup
       )
+    end
+
+    def dms_product_options_keyboard(bot, message)
+      current_dms_product_options = ['Прочесть описание', 'Выбрать программу', 'Назад']
+      option_to_choose = current_dms_product_options.map { |option| option }
+      markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
+        keyboard: option_to_choose,
+        one_time_keyboard: true
+      )
+      bot.api.send_message(
+        chat_id: message.chat.id,
+        text: 'Выберите опцию:',
+        reply_markup: markup
+      )
+    end
+
+    case message.text
+    when '/start'
+      bot.api.send_message(
+        chat_id: message.chat.id,
+        text: "Добровольное медицинское страхование.\nДМС - правильный выбор для тех, кто ценит своё время сервис и качество.\nЕсли Вам потребуется медицинская помощь, Вы сможете попасть к врачу в удобное время, быстро сдать анализы и пройти лечение"
+      )
+      dms_products_keyboard(bot, message)
     when '/end'
       finish_with_bot(bot, message)
     when message.text
@@ -222,22 +240,16 @@ Telegram::Bot::Client.run(token) do |bot|
         program_name = message.text
         user.update(dms_product_id: DmsProduct.find_by(name: message.text).id)
         current_dms_product = user.dms_product
-        current_dms_product_options = ['Прочесть описание', 'Выбрать программу']
-        option_to_choose = current_dms_product_options.map { |option| option }
-        markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-          keyboard: option_to_choose,
-          one_time_keyboard: true
-        )
-        bot.api.send_message(
-          chat_id: message.chat.id,
-          text: 'Выберите опцию:',
-          reply_markup: markup
-        )
+        dms_product_options_keyboard(bot, message)
       end
       bot.listen do |message|
         case message.text
+        when 'Назад'
+          dms_products_keyboard(bot, message)
+          break
         when 'Прочесть описание'
           current_dms_product_titles = current_dms_product.program.map { |program| program['title'].to_s }
+          current_dms_product_titles.push('Назад')
           markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
             keyboard: current_dms_product_titles,
             one_time_keyboard: true
@@ -248,6 +260,11 @@ Telegram::Bot::Client.run(token) do |bot|
             reply_markup: markup
           )
           bot.listen do |hint|
+            case hint.text
+            when 'Назад'
+              dms_product_options_keyboard(bot, message)
+              break
+            end
             if current_dms_product_titles.include?(hint.text)
               current_dms_product.program.each do |program|
                 if program['title'] == hint.text
@@ -259,9 +276,6 @@ Telegram::Bot::Client.run(token) do |bot|
                   end
                 end
               end
-            else
-              finish_with_bot(bot, hint)
-              break
             end
           end
         when 'Выбрать программу'
