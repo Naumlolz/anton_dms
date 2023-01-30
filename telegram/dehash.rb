@@ -3,6 +3,7 @@ require 'telegram/bot'
 require "uri"
 require "json"
 require "net/http"
+require 'date'
 
 def fetch_order_id
   url = URI("https://dev.api.etnamed.ru/v1/graphql")
@@ -19,20 +20,20 @@ def fetch_order_id
   res['data']['dmsCreateOrderNumber']['order_id']
 end
 
-def fetch_payment_link(param_insurant, param_insured, order_id, product_id)
-  url = URI("https://dev.api.etnamed.ru/v1/graphql")
+# def fetch_payment_link(param_insurant, param_insured, order_id, product_id)
+#   url = URI("https://dev.api.etnamed.ru/v1/graphql")
 
-  https = Net::HTTP.new(url.host, url.port)
-  https.use_ssl = true
+#   https = Net::HTTP.new(url.host, url.port)
+#   https.use_ssl = true
 
-  request = Net::HTTP::Post.new(url)
-  request["Content-Type"] = "application/json"
-  request.body = "{\"query\":\"mutation DMSCreateOrder {\\n  dmsCreateOrder(arg: {back_url: \\\"https://dms.etnamed.ru\\\", insurant: \\\"#{param_insurant}\\\", insured: \\\"#{param_insured}\\\", order_id: \\\"#{order_id}\\\", product_id: #{product_id}, promo_code: \\\"\\\", start_date: \\\"2023-02-09\\\", payment_method: \\\"bank_card\\\", form_guid: \\\"\\\", offer_guid: \\\"\\\"}) {\\n    error\\n    ok\\n    order_id\\n    payment_link\\n    __typename\\n  }\\n}\\n\",\"variables\":{}}"
+#   request = Net::HTTP::Post.new(url)
+#   request["Content-Type"] = "application/json"
+#   request.body = "{\"query\":\"mutation DMSCreateOrder {\\n  dmsCreateOrder(arg: {back_url: \\\"https://dms.etnamed.ru\\\", insurant: \\\"#{param_insurant}\\\", insured: \\\"#{param_insured}\\\", order_id: \\\"#{order_id}\\\", product_id: #{product_id}, promo_code: \\\"\\\", start_date: \\\"2023-02-09\\\", payment_method: \\\"bank_card\\\", form_guid: \\\"\\\", offer_guid: \\\"\\\"}) {\\n    error\\n    ok\\n    order_id\\n    payment_link\\n    __typename\\n  }\\n}\\n\",\"variables\":{}}"
 
-  response = https.request(request)
-  res = JSON.parse(response.read_body)
-  res['data']['dmsCreateOrder']['payment_link']
-end
+#   response = https.request(request)
+#   res = JSON.parse(response.read_body)
+#   res['data']['dmsCreateOrder']['payment_link']
+# end
 
 insured = Insured.first
 
@@ -87,4 +88,6 @@ fetch_order_id
 
 insurant.dms_product_id
 
-p fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product_id)
+start_date = Date.today + 1.weeks
+
+p PaymentLinkController.new.fetch_payment_link(code_insurant, code_insured, fetch_order_id, insurant.dms_product_id, start_date)

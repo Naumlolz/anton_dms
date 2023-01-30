@@ -5,8 +5,11 @@ require "json"
 require "net/http"
 require "date"
 
-date = Date.today + 1.weeks
-p date
+
+p OrderController.new.fetch_order_id
+
+# date = Date.today + 1.weeks
+# p date
 
 # url = URI("https://dev.api.etnamed.ru/v1/graphql")
 
