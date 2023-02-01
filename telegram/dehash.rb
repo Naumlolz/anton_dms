@@ -39,8 +39,8 @@ insured = Insured.first
 
 insurant = Insurant.first
 
-insurant.update(dms_product_id: 2)
-insured.update(dms_product_id: 2)
+# insurant.update(dms_product_id: 2)
+# insured.update(dms_product_id: 2)
 
 
 new_insurant = {
@@ -86,7 +86,7 @@ code_insured = Base64.strict_encode64(JSON.pretty_generate(new_insured))
 
 fetch_order_id
 
-insurant.dms_product_id
+p insurant.dms_product_id
 
 start_date = Date.today + 1.weeks
 
