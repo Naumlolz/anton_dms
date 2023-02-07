@@ -10,10 +10,18 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_01_18_072527) do
+ActiveRecord::Schema.define(version: 2023_02_07_150002) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
+
+  create_table "cities", force: :cascade do |t|
+    t.string "name"
+    t.boolean "active"
+    t.integer "position"
+    t.datetime "created_at", precision: 6, null: false
+    t.datetime "updated_at", precision: 6, null: false
+  end
 
   create_table "dms_products", force: :cascade do |t|
     t.jsonb "medical_sum"
@@ -23,6 +31,8 @@ ActiveRecord::Schema.define(version: 2023_01_18_072527) do
     t.string "uid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
+    t.bigint "city_id"
+    t.index ["city_id"], name: "index_dms_products_on_city_id"
   end
 
   create_table "insurants", force: :cascade do |t|
@@ -88,6 +98,7 @@ ActiveRecord::Schema.define(version: 2023_01_18_072527) do
     t.index ["dms_product_id"], name: "index_users_on_dms_product_id"
   end
 
+  add_foreign_key "dms_products", "cities"
   add_foreign_key "insurants", "dms_products"
   add_foreign_key "insureds", "dms_products"
   add_foreign_key "users", "dms_products"

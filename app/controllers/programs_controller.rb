@@ -12,7 +12,7 @@ class ProgramsController < ApplicationController
     response = https.request(request)
     res = JSON.parse(response.read_body)
     res['data']['dms_products'].each do |hash|
-      unless DmsProduct.exists?(name: hash['name'])
+      unless DmsProduct.exists?(uid: hash['uid'])
         DmsProduct.create(
           medical_sum: hash['medical_sum'],
           name:        hash['name'],

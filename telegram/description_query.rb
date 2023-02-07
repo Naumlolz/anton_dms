@@ -27,4 +27,4 @@ dms.program.each do |program|
     end
   end
 end
-# res['data']['dms_products'].each { |hash| p hash['program'].first['description'].first['items'].first}
+p res['data']['dms_products'].each { |hash| p hash['program'].first['description'].first['items'].first}
