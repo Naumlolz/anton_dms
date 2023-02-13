@@ -24,4 +24,7 @@ class DmsProduct < ApplicationRecord
   has_many :users
   has_many :insurants
   has_many :policy_holders
+
+  belongs_to :city, optional: true
+  # belongs_to :user, optional: true
 end

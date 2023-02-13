@@ -10,4 +10,5 @@
 #  updated_at :datetime         not null
 #
 class City < ApplicationRecord
+  has_many :dms_products
 end

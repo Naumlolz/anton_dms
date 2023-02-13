@@ -2,7 +2,7 @@ class ProfilesController < ApplicationController
   def user_profile_filling(user_profile, bot, message)
     user_profile.update(step: 'last name')
     bot.api.send_message(
-      chat_id: message.chat.id,
+      chat_id: message.from.id,
       text: 'Введите фамилию:'
     )
     bot.listen do |message|

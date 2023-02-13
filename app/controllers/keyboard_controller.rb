@@ -6,7 +6,7 @@ class KeyboardController < ApplicationController
       one_time_keyboard: true
     )
     bot.api.send_message(
-      chat_id: message.chat.id,
+      chat_id: message.from.id,
       text: 'Выберите действие:',
       reply_markup: markup
     )
@@ -27,11 +27,12 @@ class KeyboardController < ApplicationController
   end
 
   def dms_product_options_keyboard(bot, message)
-    current_dms_product_options = ['Прочесть описание', 'Выбрать программу', 'Назад']
-    option_to_choose = current_dms_product_options.map { |option| option }
+    current_dms_product_options = [['Прочесть описание', 'Выбрать программу', 'Назад']]
+    current_dms_product_options.map { |option| option_to_choose.push(option) }
     markup = Telegram::Bot::Types::ReplyKeyboardMarkup.new(
-      keyboard: option_to_choose,
-      one_time_keyboard: true
+      keyboard: current_dms_product_options,
+      one_time_keyboard: true,
+      resize_keyboard: true
     )
     bot.api.send_message(
       chat_id: message.chat.id,
