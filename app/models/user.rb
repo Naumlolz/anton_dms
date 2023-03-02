@@ -3,6 +3,7 @@
 # Table name: users
 #
 #  id             :bigint           not null, primary key
+#  city           :string
 #  date_of_birth  :date
 #  email          :string
 #  father_name    :string

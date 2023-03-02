@@ -2,15 +2,16 @@
 #
 # Table name: dms_products
 #
-#  id          :bigint           not null, primary key
-#  medical_sum :jsonb
-#  name        :string
-#  price       :jsonb            is an Array
-#  program     :jsonb            is an Array
-#  uid         :string
-#  created_at  :datetime         not null
-#  updated_at  :datetime         not null
-#  city_id     :bigint
+#  id                :bigint           not null, primary key
+#  file_program_path :string
+#  medical_sum       :jsonb
+#  name              :string
+#  price             :jsonb            is an Array
+#  program           :jsonb            is an Array
+#  uid               :string
+#  created_at        :datetime         not null
+#  updated_at        :datetime         not null
+#  city_id           :bigint
 #
 # Indexes
 #

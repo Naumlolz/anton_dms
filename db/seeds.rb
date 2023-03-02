@@ -4,4 +4,5 @@ require "uri"
 require "json"
 require "net/http"
 
+ProgramsController.new.fetch_cities
 ProgramsController.new.fetch_programs
