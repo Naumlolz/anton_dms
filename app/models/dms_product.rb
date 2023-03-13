@@ -12,6 +12,7 @@
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
 #  city_id           :bigint
+#  product_id        :integer
 #
 # Indexes
 #

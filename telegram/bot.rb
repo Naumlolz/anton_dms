@@ -5,7 +5,7 @@ require 'json'
 require 'net/http'
 require 'date'
 
-token = '5982315763:AAFJcUzIQN7ufbw2VgyOEfwkez67aIJ8lak'
+token = '5672148721:AAHegNZ5zfA0r31hhEqSy9TviiMoZQzq8eE'
 
 Telegram::Bot::Client.run(token) do |bot|
   bot.listen do |message|

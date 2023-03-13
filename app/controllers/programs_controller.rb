@@ -35,17 +35,37 @@ class ProgramsController < ApplicationController
     response = https.request(request)
     res = JSON.parse(response.read_body)
     res['data']['dms_products'].each do |hash|
-      unless DmsProduct.exists?(DmsProduct.find_by(name: hash['name'], city_id: City.find_by(name: hash['city']['name']).id))
-        DmsProduct.create(
-          medical_sum: hash['medical_sum'],
-          name:        hash['name'],
-          price:       hash['price'],
-          program:     hash['program'],
-          uid:         hash['uid'],
-          city_id:     City.find_by(name: hash['city']['name']).id,
-          file_program_path: hash['file_program_path']
-        )
-      end
+    dms = DmsProduct.find_or_initialize_by(name: hash['name'], city_id: City.find_by(name: hash['city']['name']).id)
+    dms.update(
+      medical_sum: hash['medical_sum'],
+      name:        hash['name'],
+      price:       hash['price'],
+      program:     hash['program'],
+      uid:         hash['uid'],
+      city_id:     City.find_by(name: hash['city']['name']).id,
+      file_program_path: hash['file_program_path'],
+      product_id: hash['id']
+    )
+    # DmsProduct.find_or_create_by(
+    #   medical_sum: hash['medical_sum'],
+    #   name:        hash['name'],
+    #   price:       hash['price'],
+    #   program:     hash['program'],
+    #   uid:         hash['uid'],
+    #   city_id:     City.find_by(name: hash['city']['name']).id,
+    #   file_program_path: hash['file_program_path']
+    # )
+      # unless DmsProduct.exists?(DmsProduct.find_by(name: hash['name'], city_id: City.find_by(name: hash['city']['name']).id))
+      #   DmsProduct.create(
+      #     medical_sum: hash['medical_sum'],
+      #     name:        hash['name'],
+      #     price:       hash['price'],
+      #     program:     hash['program'],
+      #     uid:         hash['uid'],
+      #     city_id:     City.find_by(name: hash['city']['name']).id,
+      #     file_program_path: hash['file_program_path']
+      #   )
+      # end
     end
   end
 end
