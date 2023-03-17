@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema.define(version: 2023_03_10_142949) do
+ActiveRecord::Schema.define(version: 2023_03_13_082031) do
 
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
@@ -26,14 +26,14 @@ ActiveRecord::Schema.define(version: 2023_03_10_142949) do
   create_table "dms_products", force: :cascade do |t|
     t.jsonb "medical_sum"
     t.string "name"
-    t.jsonb "price", array: true
-    t.jsonb "program", array: true
     t.string "uid"
     t.datetime "created_at", precision: 6, null: false
     t.datetime "updated_at", precision: 6, null: false
     t.bigint "city_id"
     t.string "file_program_path"
     t.integer "product_id"
+    t.jsonb "price"
+    t.jsonb "program"
     t.index ["city_id"], name: "index_dms_products_on_city_id"
   end
 

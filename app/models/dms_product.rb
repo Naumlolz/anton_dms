@@ -6,8 +6,8 @@
 #  file_program_path :string
 #  medical_sum       :jsonb
 #  name              :string
-#  price             :jsonb            is an Array
-#  program           :jsonb            is an Array
+#  price             :jsonb
+#  program           :jsonb
 #  uid               :string
 #  created_at        :datetime         not null
 #  updated_at        :datetime         not null
